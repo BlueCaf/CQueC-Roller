@@ -24,3 +24,7 @@ go.work.sum
 # env file
 .env
 .vscode
+
+# config file
+config.yaml
+cquec_roller.log
