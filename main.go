@@ -56,7 +56,7 @@ func (qp *QueueProcessor) ProcessQueue(ctx context.Context, userCount int) {
 	// fmt.Println(debug)
 	items, err := qp.redisClient.ZRangeWithScores(ctx, qp.queueKey, 0, int64(userCount-1)).Result()
 	if err != nil {
-		ErrorLogger.Println("ZRangeWithScores 오류:", err)
+		ErrorLogger.Println("Error Redis ZRangeWithScores:", err)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (qp *QueueProcessor) ProcessQueue(ctx context.Context, userCount int) {
 		for _, item := range items {
 			err = qp.redisClient.ZRem(ctx, qp.queueKey, item.Member).Err()
 			if err != nil {
-				ErrorLogger.Println("ZRem error:", err)
+				ErrorLogger.Println("Error Redis ZRem:", err)
 				return
 			}
 		}
@@ -88,9 +88,9 @@ func (qp *QueueProcessor) ProcessQueue(ctx context.Context, userCount int) {
 				// err := qp.redisClient.Set(ctx, key, value, qp.ttl).Err()
 				err := qp.redisClient.Set(ctx, key, "1", qp.ttl).Err()
 				if err != nil {
-					ErrorLogger.Println("Set 오류: ", err.Error())
+					ErrorLogger.Println("Error Redis Set:", err.Error())
 				} else {
-					InfoLogger.Println("Process된 항목 확인:", key, item.Score)
+					InfoLogger.Println("Check Processed:", key, item.Score)
 				}
 			}(item)
 		}
@@ -101,7 +101,6 @@ func (qp *QueueProcessor) ProcessQueue(ctx context.Context, userCount int) {
 func main() {
 	ctx := context.Background()
 
-	// Load configuration from YAML file
 	var config Config
 	config, err := LoadConfig("config.yaml")
 	if err != nil {
@@ -120,10 +119,10 @@ func main() {
 
 	pong, err := redisClient.Ping(ctx).Result()
 	if err != nil {
-		ErrorLogger.Println("Redis에 연결하는 데 오류가 발생했습니다:", err)
+		ErrorLogger.Println("Error Redis connected:", err)
 		return
 	}
-	InfoLogger.Println("Redis에 연결되었습니다:", pong)
+	InfoLogger.Println("Connect Redis:", pong)
 
 	queueKey := config.QueueKey
 	processKey := config.ProcessKey
